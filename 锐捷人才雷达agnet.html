@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锐捷智才Radar - 业务负责人专属AI人才顾问</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #0a1628;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .phone-frame {
+            width: 390px;
+            height: 844px;
+            background: #f5f7fa;
+            border-radius: 44px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5), inset 0 0 0 10px #1a2332;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 32px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+        .header {
+            padding: 48px 20px 12px;
+            text-align: center;
+            background: linear-gradient(180deg, #ffffff 0%, #f5f7fa 100%);
+            border-bottom: 1px solid #e8ecf1;
+        }
+        .header .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .header .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #0066FF, #00A8FF);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header .logo-icon svg { width: 16px; height: 16px; }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2332;
+            letter-spacing: 0.5px;
+        }
+        .header p {
+            font-size: 12px;
+            color: #5a6c7d;
+            margin-top: 3px;
+            font-weight: 400;
+        }
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            background: #f5f7fa;
+            scroll-behavior: smooth;
+        }
+        .chat-container::-webkit-scrollbar { width: 0; }
+        .message {
+            margin-bottom: 14px;
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeInUp 0.45s ease forwards;
+        }
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-msg {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e3f0ff 0%, #c2e0ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: #0066FF;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .user-bubble {
+            max-width: 260px;
+            padding: 11px 15px;
+            background: linear-gradient(135deg, #e8f2ff 0%, #f0f7ff 100%);
+            border-radius: 16px 16px 4px 16px;
+            color: #0047b3;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid #d0e3ff;
+        }
+        .ai-msg {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .ai-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0066FF, #00A8FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .ai-avatar svg { width: 18px; height: 18px; }
+        .ai-content {
+            max-width: 280px;
+        }
+        .ai-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+        }
+        .ai-label span {
+            font-size: 12px;
+            color: #0066FF;
+            font-weight: 600;
+        }
+        .ai-label .tag {
+            font-size: 10px;
+            padding: 2px 7px;
+            background: #e8f2ff;
+            color: #0066FF;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .ai-bubble {
+            padding: 11px 15px;
+            background: #fff;
+            border-radius: 4px 16px 16px 16px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e8ecf1;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        .thinking-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e8ecf1;
+        }
+        .thinking-title {
+            font-size: 13px;
+            color: #0066FF;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .thinking-title .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #cce0ff;
+            border-top-color: #0066FF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .thinking-step {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 7px 0;
+            font-size: 12px;
+            color: #718096;
+        }
+        .thinking-step .check {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #a0aec0;
+            flex-shrink: 0;
+        }
+        .thinking-step.done .check {
+            background: #0066FF;
+            border-color: #0066FF;
+            color: #fff;
+        }
+        .thinking-step.done { color: #2d3748; }
+        .thinking-step.active { color: #0066FF; font-weight: 500; }
+        .thinking-step.active .check {
+            border-color: #0066FF;
+            animation: pulse 1.5s ease infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,102,255,0.25); }
+            50% { box-shadow: 0 0 0 5px rgba(0,102,255,0); }
+        }
+        .card-result {
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e8ecf1;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0066FF;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .candidate-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .candidate-card {
+            flex: 1;
+            background: linear-gradient(180deg, #f0f7ff 0%, #fff 100%);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0edff;
+            position: relative;
+            overflow: hidden;
+        }
+        .candidate-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0066FF, #00A8FF);
+        }
+        .candidate-card.orange::before {
+            background: linear-gradient(90deg, #ff6b35, #ff9f43);
+        }
+        .candidate-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066FF, #00A8FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 auto 7px;
+        }
+        .candidate-card.orange .candidate-avatar {
+            background: linear-gradient(135deg, #ff6b35, #ff9f43);
+        }
+        .candidate-name { font-size: 14px; font-weight: 700; color: #1a2332; }
+        .candidate-role { font-size: 11px; color: #5a6c7d; margin: 3px 0; }
+        .candidate-score { font-size: 22px; font-weight: 800; color: #0066FF; margin: 6px 0 3px; }
+        .candidate-card.orange .candidate-score { color: #ff6b35; }
+        .candidate-label { font-size: 11px; color: #8b9db3; }
+        .chart-box { width: 100%; height: 190px; margin: 10px 0; }
+        .insight-box {
+            background: linear-gradient(135deg, #f0f7ff 0%, #f5faff 100%);
+            border-radius: 10px;
+            padding: 11px;
+            border: 1px solid #e0edff;
+            font-size: 12px;
+            color: #1a3a5c;
+            line-height: 1.7;
+        }
+        .insight-box strong { color: #0066FF; }
+        .cross-candidate {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        .cross-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .cross-info { flex: 1; }
+        .cross-name { font-size: 13px; font-weight: 700; color: #1a2332; }
+        .cross-role { font-size: 11px; color: #5a6c7d; margin-top: 1px; }
+        .cross-tags { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+        .cross-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: #e8f2ff;
+            color: #0066FF;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .cross-score {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1a2332;
+        }
+        .input-area {
+            padding: 10px 14px 20px;
+            background: #fff;
+            border-top: 1px solid #e8ecf1;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .input-box {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #d0d7de;
+            border-radius: 22px;
+            font-size: 14px;
+            outline: none;
+            color: #2d3748;
+            background: #f8fafc;
+        }
+        .input-box::placeholder { color: #9aa5b1; }
+        .input-box:focus { border-color: #0066FF; background: #fff; }
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066FF, #00A8FF);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 3px 12px rgba(0,102,255,0.25);
+        }
+        .send-btn:hover { transform: scale(1.05); }
+        .send-btn svg { width: 18px; height: 18px; }
+        .footer-brand {
+            text-align: center;
+            padding: 6px;
+            font-size: 10px;
+            color: #8b9db3;
+            background: #f5f7fa;
+            letter-spacing: 0.3px;
+        }
+        .start-screen {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, #ffffff 0%, #f0f7ff 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            transition: opacity 0.5s;
+        }
+        .start-screen.hidden { opacity: 0; pointer-events: none; }
+        .start-icon {
+            width: 68px;
+            height: 68px;
+            background: linear-gradient(135deg, #0066FF, #00A8FF);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 22px;
+            box-shadow: 0 8px 32px rgba(0,102,255,0.25);
+        }
+        .start-icon svg { width: 32px; height: 32px; }
+        .start-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1a2332;
+            margin-bottom: 6px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .start-sub {
+            font-size: 13px;
+            color: #5a6c7d;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .start-desc {
+            font-size: 12px;
+            color: #8b9db3;
+            text-align: center;
+            max-width: 270px;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+        .start-btn {
+            padding: 13px 36px;
+            background: linear-gradient(135deg, #0066FF, #00A8FF);
+            color: #fff;
+            border: none;
+            border-radius: 26px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(0,102,255,0.25);
+            transition: transform 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .start-btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="start-screen" id="startScreen">
+            <div class="start-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+            </div>
+            <div class="start-title">锐捷智才Radar</div>
+            <div class="start-sub">业务负责人专属AI人才顾问</div>
+            <div class="start-desc">基于锐捷网络人才数据与能力模型，为业务决策提供实时人才洞察与组织诊断</div>
+            <button class="start-btn" onclick="startDemo()">立即体验</button>
+        </div>
+        <div class="header">
+            <div class="logo-row">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/>
+                    </svg>
+                </div>
+                <h1>锐捷智才Radar</h1>
+            </div>
+            <p>业务负责人专属AI人才顾问</p>
+        </div>
+        <div class="chat-container" id="chatContainer"></div>
+        <div class="input-area">
+            <input type="text" class="input-box" placeholder="输入人才盘点或团队诊断指令..." id="inputBox" onkeypress="handleEnter(event)">
+            <button class="send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="footer-brand">锐捷网络 · AI人才智能体</div>
+    </div>
+<script>
+let currentScene = 0;
+const scenes = [
+    {
+        user: "小锐，海外事业部欧洲区总监调任集团战略部，需要尽快确定继任者。要求具备海外管理经验和团队领导力，帮我筛选内部候选人。",
+        thinking: [
+            { text: "意图识别：欧洲区总监继任者筛选", done: true },
+            { text: "标签筛选：[海外经验≥3年] [团队管理] [技术架构] [客户拓展] [跨文化沟通]", done: true },
+            { text: "数据穿透：锐捷人才库 → 管理序列M4-M5 → 海外背景", done: false }
+        ],
+        result: {
+            type: "successor",
+            title: "继任者深度比对：欧洲区总监",
+            desc: "基于岗位能力模型，为您锁定2位核心候选人：",
+            candidates: [
+                { name: "李思", role: "数据中心事业部 / 解决方案总监", score: 84, color: "purple", initial: "李" },
+                { name: "张昊", role: "海外事业部-东南亚 / 技术总监", score: 82, color: "orange", initial: "张" }
+            ],
+            radarData: {
+                indicator: [
+                    { name: '技术架构', max: 10 },
+                    { name: '客户拓展', max: 10 },
+                    { name: '团队管理', max: 10 },
+                    { name: '跨文化沟通', max: 10 },
+                    { name: '项目管理', max: 10 }
+                ],
+                series: [
+                    { name: '李思', value: [9, 8, 8, 8, 9] },
+                    { name: '张昊', value: [9, 7, 8, 9, 8] }
+                ]
+            },
+            insight: "基于\"海外经验 + 团队管理 + 五维能力均衡性\"核心要求，<strong>李思</strong>综合匹配度更高（84分），管理基础成熟，适合承担区域总监全面职责；<strong>张昊</strong>海外场景适配度突出（82分），跨文化沟通强，建议作为重点备选进入评估环节。"
+        }
+    },
+    {
+        user: "李思确实很合适。另外集团正在筹备『云网络战略项目』，面向智算中心网络解决方案，需要懂技术和产品的复合型人才牵头，内部有合适人选吗？",
+        thinking: [
+            { text: "意图识别：云网络战略项目领军人物", done: true },
+            { text: "标签筛选：[云网络] [技术架构] [产品规划] [数据分析] [安全合规]", done: true },
+            { text: "跨界搜索：研发中心 × 产品体系 × 智能计算部", done: false }
+        ],
+        result: {
+            type: "cross",
+            title: "跨界复合型将才推荐",
+            desc: "针对云网络战略项目，全集团跨界扫描结果：",
+            candidates: [
+                { name: "陈默", role: "研发中心-云网络 / 架构师", score: 90, initial: "陈", bg: "#0066FF", tags: ["云网络专家", "技术架构", "产品规划"] },
+                { name: "孙悦", role: "智能计算部 / AI产品经理", score: 82, initial: "孙", bg: "#00A8FF", tags: ["产品规划", "数据分析", "智算场景"] }
+            ],
+            insight: "<strong>AI洞察：</strong>陈默技术底座最强（云网络10分、技术架构10分），适合担任一号位主导技术路线；孙悦对AI智算场景理解深刻（产品规划10分、数据分析9分），可作为业务创新副手。建议<strong>陈默+孙悦</strong>组合搭班推进项目。"
+        }
+    },
+    {
+        user: "这两个人选都不错。最后帮我对比一下『研发中心-无线产品』和『国内事业部-华南区』两个团队的能力结构，我考虑抽调骨干支持云网络项目。",
+        thinking: [
+            { text: "意图识别：团队核心能力对比分析", done: true },
+            { text: "实体定位：[研发中心-无线产品] vs [国内事业部-华南区]", done: true },
+            { text: "指标聚合：集团能力素质模型五维指标", done: false }
+        ],
+        result: {
+            type: "team",
+            title: "团队核心能力对比分析",
+            subtitle: "基于锐捷网络能力素质模型（满分10分）",
+            radarData: {
+                indicator: [
+                    { name: '技术攻坚', max: 10 },
+                    { name: '市场洞察', max: 10 },
+                    { name: '客户服务', max: 10 },
+                    { name: '渠道管理', max: 10 },
+                    { name: '创新孵化', max: 10 }
+                ],
+                series: [
+                    { name: '研发中心-无线产品', value: [10, 6, 7, 4, 9] },
+                    { name: '国内事业部-华南区', value: [5, 9, 9, 8, 5] }
+                ]
+            },
+            insight: "<strong>组织诊断：</strong>无线产品部在<strong>技术攻坚</strong>（10分）与<strong>创新孵化</strong>（9分）上优势显著，适合前沿技术攻关；华南区在<strong>市场洞察</strong>（9分）与<strong>渠道管理</strong>（8分）上能力突出，擅长商业落地。两者互补性强，建议无线产品抽调3名技术骨干，华南区抽调2名渠道运营专家，形成研发→试点→复制的联动机制。"
+        }
+    }
+];
+
+function startDemo() {
+    document.getElementById('startScreen').classList.add('hidden');
+    setTimeout(() => playScene(0), 500);
+}
+
+function addMessage(html, delay = 0) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = html;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            resolve(div);
+        }, delay);
+    });
+}
+
+function userBubble(text) {
+    return '<div class=\"user-msg\"><div class=\"user-bubble\">' + text + '</div><div class=\"user-avatar\">黄</div></div>';
+}
+
+function aiLabel() {
+    return '<div class=\"ai-label\"><div class=\"ai-avatar\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12\"/></svg></div><span>锐捷智才Radar</span><span class=\"tag\">业务顾问</span></div>';
+}
+
+async function playScene(index) {
+    const scene = scenes[index];
+    await addMessage(userBubble(scene.user), 300);
+    
+    let stepsHtml = '';
+    for(let i=0; i<scene.thinking.length; i++) {
+        const s = scene.thinking[i];
+        stepsHtml += '<div class=\"thinking-step ' + (s.done ? 'done' : 'active') + '\" id=\"step-' + index + '-' + i + '\"><div class=\"check\">' + (s.done ? '✓' : '') + '</div><div>' + s.text + '</div></div>';
+    }
+    
+    const thinkingHtml = '<div class=\"ai-msg\">' + aiLabel() + '<div class=\"thinking-box\"><div class=\"thinking-title\"><div class=\"spinner\"></div>AI 深度检索与分析中...</div>' + stepsHtml + '</div></div>';
+    await addMessage(thinkingHtml, 600);
+    
+    await new Promise(r => setTimeout(r, 1500));
+    const lastStep = document.getElementById('step-' + index + '-' + (scene.thinking.length-1));
+    if(lastStep) {
+        lastStep.classList.remove('active');
+        lastStep.classList.add('done');
+        lastStep.querySelector('.check').textContent = '✓';
+    }
+    await new Promise(r => setTimeout(r, 800));
+    
+    let resultHtml = '';
+    if(scene.result.type === 'successor') {
+        let cardsHtml = '';
+        for(let c of scene.result.candidates) {
+            cardsHtml += '<div class=\"candidate-card ' + (c.color === 'orange' ? 'orange' : '') + '\"><div class=\"candidate-avatar\">' + c.initial + '</div><div class=\"candidate-name\">' + c.name + '</div><div class=\"candidate-role\">' + c.role + '</div><div class=\"candidate-score\">' + c.score + '分</div><div class=\"candidate-label\">岗位匹配度</div></div>';
+        }
+        resultHtml = '<div class=\"ai-msg\">' + aiLabel() + '<div class=\"card-result\"><div class=\"card-title\">' + scene.result.title + '</div><div style=\"font-size:12px;color:#5a6c7d;margin-bottom:10px;\">' + scene.result.desc + '</div><div class=\"candidate-row\">' + cardsHtml + '</div><div style=\"font-size:12px;color:#5a6c7d;margin-bottom:6px;\">核心能力雷达图</div><div class=\"chart-box\" id=\"radar-' + index + '\"></div><div class=\"insight-box\">💡 <strong>AI 终选建议：</strong>' + scene.result.insight + '</div></div></div>';
+    } else if(scene.result.type === 'cross') {
+        let crossHtml = '';
+        for(let c of scene.result.candidates) {
+            let tagsHtml = '';
+            for(let t of c.tags) { tagsHtml += '<span class=\"cross-tag\">' + t + '</span>'; }
+            crossHtml += '<div class=\"cross-candidate\"><div class=\"cross-avatar\" style=\"background:' + c.bg + '\">' + c.initial + '</div><div class=\"cross-info\"><div class=\"cross-name\">' + c.name + '</div><div class=\"cross-role\">' + c.role + '</div><div class=\"cross-tags\">' + tagsHtml + '</div></div><div class=\"cross-score\">' + c.score + '分</div></div>';
+        }
+        resultHtml = '<div class=\"ai-msg\">' + aiLabel() + '<div class=\"card-result\"><div class=\"card-title\">' + scene.result.title + '</div><div style=\"font-size:12px;color:#5a6c7d;margin-bottom:10px;\">' + scene.result.desc + '</div>' + crossHtml + '<div class=\"insight-box\" style=\"margin-top:10px;\">⚡ ' + scene.result.insight + '</div></div></div>';
+    } else if(scene.result.type === 'team') {
+        resultHtml = '<div class=\"ai-msg\">' + aiLabel() + '<div class=\"card-result\"><div class=\"card-title\">' + scene.result.title + '</div><div style=\"font-size:12px;color:#5a6c7d;margin-bottom:6px;\">' + scene.result.subtitle + '</div><div class=\"chart-box\" id=\"team-radar-' + index + '\"></div><div class=\"insight-box\">🏢 ' + scene.result.insight + '</div></div></div>';
+    }
+    
+    await addMessage(resultHtml, 400);
+    
+    setTimeout(() => {
+        if(scene.result.type === 'successor' && scene.result.radarData) {
+            initRadar('radar-' + index, scene.result.radarData, ['#0066FF', '#ff6b35']);
+        }
+        if(scene.result.type === 'team' && scene.result.radarData) {
+            initRadar('team-radar-' + index, scene.result.radarData, ['#0066FF', '#ff6b35']);
+        }
+    }, 100);
+    
+    currentScene = index + 1;
+}
+
+function initRadar(domId, data, colors) {
+    const chart = echarts.init(document.getElementById(domId));
+    const option = {
+        radar: {
+            indicator: data.indicator,
+            radius: '62%',
+            axisName: { color: '#8b9db3', fontSize: 10 },
+            splitArea: { areaStyle: { color: ['#f8fafc', '#fff'] } },
+            axisLine: { lineStyle: { color: '#e2e8f0' } },
+            splitLine: { lineStyle: { color: '#e2e8f0' } }
+        },
+        series: [{
+            type: 'radar',
+            data: data.series.map((s, i) => ({
+                value: s.value,
+                name: s.name,
+                lineStyle: { color: colors[i], width: 2 },
+                areaStyle: { color: colors[i], opacity: 0.12 },
+                itemStyle: { color: colors[i] },
+                symbol: 'circle',
+                symbolSize: 5
+            }))
+        }],
+        legend: {
+            bottom: 0,
+            textStyle: { fontSize: 11, color: '#5a6c7d' },
+            itemWidth: 10,
+            itemHeight: 10
+        }
+    };
+    chart.setOption(option);
+}
+
+function handleEnter(e) {
+    if(e.key === 'Enter') sendMessage();
+}
+
+function sendMessage() {
+    const input = document.getElementById('inputBox');
+    const text = input.value.trim();
+    if(!text) return;
+    
+    if(currentScene < scenes.length) {
+        input.value = '';
+        playScene(currentScene);
+    } else {
+        addMessage(userBubble(text), 0);
+        setTimeout(() => {
+            addMessage('<div class=\"ai-msg\">' + aiLabel() + '<div class=\"ai-bubble\">已收到您的需求，黄总。锐捷智才Radar随时为您提供人才搜寻与组织诊断服务。<br><br><span style=\"color:#8b9db3;font-size:11px;\">支持：继任者规划 | 跨界人才扫描 | 团队能力诊断 | 组织健康度分析</span></div></div>', 400);
+        }, 600);
+        input.value = '';
+    }
+}
+</script>
+</body>
+</html>
